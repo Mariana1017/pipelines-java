@@ -4,6 +4,17 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
 trigger:
+- master
+pool:
+vmImage:'ubuntu-latest'
+
+steps:
+- task: Maven@3
+displayName: 'Maven app/pom.xml'
+  inputs:
+    mavenPomFile: 'app/pom.xml'
+    codeCoverageToolOption:Cobertura
+
 - task: CopyFiles@2
 displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
   inputs:
@@ -12,24 +23,10 @@ displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     CleanTargetFolder: true
     preserveTimestamp: true
-- main
 
-pool:
 - task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-  vmImage: ubuntu-latest
-
-steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+  condition: succeededOrFailed()
